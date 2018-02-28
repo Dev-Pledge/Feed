@@ -1,4 +1,5 @@
 <?php
+
 $dotEnvFile = '.developmentenv';
 if ( isset( $_ENV['production'] ) && $_ENV['production'] == "true" ) {
 	$dotEnvFile = '.productionenv';
