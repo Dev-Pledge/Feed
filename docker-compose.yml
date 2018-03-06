@@ -6,7 +6,7 @@ services:
     container_name: dev_pledge_feed
     build:
       context: .
-      dockerfile: feed.dockerfile
+      dockerfile: feed.dockerfile.dev
     environment:
       docker: "true"
       production: "false"
