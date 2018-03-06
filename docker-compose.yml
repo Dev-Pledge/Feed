@@ -3,6 +3,7 @@ version: "3.5"
 services:
 
   feed:
+    container_name: dev_pledge_feed
     build:
       context: .
       dockerfile: feed.dockerfile
