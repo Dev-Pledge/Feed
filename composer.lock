@@ -1,10 +1,10 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "22e7f787c9df301d13980e817642d768",
+    "content-hash": "45bb0006234e6e9861ee538e4ee50aea",
     "packages": [
         {
             "name": "container-interop/container-interop",
@@ -36,6 +36,56 @@
             "description": "Promoting the interoperability of container objects (DIC, SL, etc.)",
             "homepage": "https://github.com/container-interop/container-interop",
             "time": "2017-02-14T19:40:03+00:00"
+        },
+        {
+            "name": "dev-pledge/slim-integrations",
+            "version": "v0.1.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Dev-Pledge/SlimIntegrations.git",
+                "reference": "8026a4913a3163c37d8262f3dee4547a52bc2295"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Dev-Pledge/SlimIntegrations/zipball/8026a4913a3163c37d8262f3dee4547a52bc2295",
+                "reference": "8026a4913a3163c37d8262f3dee4547a52bc2295",
+                "shasum": ""
+            },
+            "require": {
+                "jrsaunders/quickcache": "^1.0",
+                "monolog/monolog": "^1.23",
+                "php": ">=7.2.0",
+                "predis/predis": "^1.1",
+                "sentry/sentry": "^1.8",
+                "slim/php-view": "^2.2",
+                "slim/slim": "^3.1",
+                "spomky-labs/base64url": "^1.0",
+                "tomwright/extended-pdo": "^1.0",
+                "tomwright/json": "^1.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "DevPledge\\Integrations\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "John Saunders",
+                    "email": "john@yettimedia.co.uk"
+                }
+            ],
+            "description": "Dev Pledge Slim Integrations",
+            "homepage": "https://github.com/Dev-Pledge/SlimIntegrations",
+            "keywords": [
+                "Dev Pledge",
+                "slim"
+            ],
+            "time": "2018-06-01T14:17:04+00:00"
         },
         {
             "name": "doctrine/instantiator",
@@ -90,6 +140,42 @@
                 "instantiate"
             ],
             "time": "2017-07-22T11:58:36+00:00"
+        },
+        {
+            "name": "jrsaunders/quickcache",
+            "version": "v1.0.6",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/JRSaunders/QuickCache.git",
+                "reference": "56e5002361c4d402cad58ea4dad76a527317a63b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/JRSaunders/QuickCache/zipball/56e5002361c4d402cad58ea4dad76a527317a63b",
+                "reference": "56e5002361c4d402cad58ea4dad76a527317a63b",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "QuickCache\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "proprietary"
+            ],
+            "authors": [
+                {
+                    "name": "John Saunders",
+                    "email": "john@yettimedia.co.uk"
+                }
+            ],
+            "description": "Quick Caching",
+            "time": "2017-05-24T09:07:15+00:00"
         },
         {
             "name": "monolog/monolog",
@@ -914,6 +1000,56 @@
                 "dependency injection"
             ],
             "time": "2018-01-21T07:42:36+00:00"
+        },
+        {
+            "name": "predis/predis",
+            "version": "v1.1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/nrk/predis.git",
+                "reference": "f0210e38881631afeafb56ab43405a92cafd9fd1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/nrk/predis/zipball/f0210e38881631afeafb56ab43405a92cafd9fd1",
+                "reference": "f0210e38881631afeafb56ab43405a92cafd9fd1",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.9"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "~4.8"
+            },
+            "suggest": {
+                "ext-curl": "Allows access to Webdis when paired with phpiredis",
+                "ext-phpiredis": "Allows faster serialization and deserialization of the Redis protocol"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Predis\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Daniele Alessandri",
+                    "email": "suppakilla@gmail.com",
+                    "homepage": "http://clorophilla.net"
+                }
+            ],
+            "description": "Flexible and feature-complete Redis client for PHP and HHVM",
+            "homepage": "http://github.com/nrk/predis",
+            "keywords": [
+                "nosql",
+                "predis",
+                "redis"
+            ],
+            "time": "2016-06-16T16:22:20+00:00"
         },
         {
             "name": "psr/container",
@@ -1757,6 +1893,58 @@
                 "router"
             ],
             "time": "2017-11-26T19:13:09+00:00"
+        },
+        {
+            "name": "spomky-labs/base64url",
+            "version": "v1.0.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Spomky-Labs/base64url.git",
+                "reference": "ef6d5fb93894063d9cee996022259fd08d6646ea"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Spomky-Labs/base64url/zipball/ef6d5fb93894063d9cee996022259fd08d6646ea",
+                "reference": "ef6d5fb93894063d9cee996022259fd08d6646ea",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^5.3|^7.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^4.0|^5.0",
+                "satooshi/php-coveralls": "^1.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Base64Url\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Florent Morselli",
+                    "homepage": "https://github.com/Spomky-Labs/base64url/contributors"
+                }
+            ],
+            "description": "Base 64 URL Safe Encoding/decoding PHP Library",
+            "homepage": "https://github.com/Spomky-Labs/base64url",
+            "keywords": [
+                "base64",
+                "rfc4648",
+                "safe",
+                "url"
+            ],
+            "time": "2016-01-21T19:50:30+00:00"
         },
         {
             "name": "symfony/yaml",
