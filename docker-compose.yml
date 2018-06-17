@@ -3,6 +3,7 @@ version: "3.5"
 services:
 
   feed:
+    container_name: dev_pledge_feed
     image: devpledge/phpfpm-swoole:latest
     environment:
       docker: "true"
