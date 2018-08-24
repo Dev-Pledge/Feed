@@ -1,0 +1,7 @@
+ENVIRONMENT=development
+
+SWOOLE_PORT=9501
+API_DOMAIN=feed
+JWT_SECRET=98ygvbnjhgvfr67ujh
+SENTRY_DOMAIN=sentry
+

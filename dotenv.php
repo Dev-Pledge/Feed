@@ -1,8 +1,8 @@
 <?php
 
-$dotEnvFile = '.developmentenv';
+$dotEnvFile = '.app-dev-env';
 if ( isset( $_ENV['production'] ) && $_ENV['production'] == "true" ) {
-	$dotEnvFile = '.productionenv';
+	$dotEnvFile = '.app-prod-env';
 }
 
 //https://github.com/vlucas/phpdotenv

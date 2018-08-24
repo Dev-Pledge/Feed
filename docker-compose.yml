@@ -4,36 +4,21 @@ services:
 
   feed:
     container_name: dev_pledge_feed
-    image: devpledge/phpfpm-swoole:latest
-    environment:
-      docker: "true"
-      production: "false"
+    image: twosee/swoole-coroutine
     env_file:
-    #create a .sentryenv with SENTRY_DSN=...
-      - .sentryenv
+    #create a .sentry-env use .sentry-example-env as template...
+      - .sentry-env
+      - .app-dev-env
     volumes:
-      - .:/var/www:cached
-      - ./logs:/var/log:cached
+      - .:/app/src:cached
+
     expose:
-      - 9000
       - 9501
     networks:
       - default
       - sentry_network
       - cache_network
-
-  mysql-db:
-    restart: always
-    image: mysql:latest
-    environment:
-      MYSQL_ROOT_PASSWORD: 'test_pass'
-      MYSQL_USER: 'test'
-      MYSQL_PASS: 'pass'
-    volumes:
-     - ./data/mysql:/var/lib/mysql:cached
-    ports:
-      - 3312:3306
-
+    command: php /app/src/swooletest.php
 networks:
   default:
     name: devpledge_feed
