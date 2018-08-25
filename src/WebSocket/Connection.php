@@ -2,6 +2,9 @@
 
 namespace DevPledge\WebSocket;
 
+use Swoole\Http\Request;
+use Swoole\WebSocket\Frame;
+
 /**
  * Class Connection
  * @package DevPledge\WebSocket\Topic
@@ -22,7 +25,8 @@ class Connection {
 	 * @param \stdClass $request
 	 * @param Connections $connections
 	 */
-	public function __construct( \stdClass $request, Connections $connections ) {
+	public function __construct( Request $request, Connections $connections ) {
+		var_dump( $request );
 		if ( isset( $request->fd ) ) {
 			$this->connectionId = $request->fd;
 			$connections->addConnection( $this );
@@ -33,11 +37,11 @@ class Connection {
 	}
 
 	/**
-	 * @param \stdClass $request
+	 * @param Frame $request
 	 *
 	 * @return Connection
 	 */
-	public function processRequest( \stdClass $request ): Connection {
+	public function processFrame( Frame $request ): Connection {
 		if ( isset( $request->data ) ) {
 			$this->processRawData( $request->data );
 		}

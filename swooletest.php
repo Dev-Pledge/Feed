@@ -25,5 +25,6 @@ $http->on( 'request', function ( $request, $response ) use ( $cache ) {
 //	$result = $cache->get( $keyp );
 	$response->end( "<h1>FEED Hello Devpledge Swoole Test. #" . rand( 1000, 9999 ) . "</h1>" . print_r( $result, true ) );
 
+
 } );
 $http->start();

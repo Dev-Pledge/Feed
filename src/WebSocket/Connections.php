@@ -3,6 +3,8 @@
 namespace DevPledge\WebSocket;
 
 
+use Swoole\WebSocket\Frame;
+
 class Connections {
 	/**
 	 * @var Connection[]
@@ -19,7 +21,7 @@ class Connections {
 	 *
 	 * @param swoole_websocket_server $websocketServer
 	 */
-	public function __construct( swoole_websocket_server $websocketServer ) {
+	public function __construct( \swoole_websocket_server $websocketServer ) {
 		static::$websocketServer = $websocketServer;
 	}
 
@@ -35,12 +37,12 @@ class Connections {
 	}
 
 	/**
-	 * @param \stdClass $request
+	 * @param Frame $request
 	 *
 	 * @return Connection|null
 	 */
-	public function getConnectionByRequest( \stdClass $request ): ?Connection {
-		if ( isset( $request->fd ) ) {
+	public function getConnectionByRequest( Frame $request ): ?Connection {
+		if ( isset( $request->fd) ) {
 			return $this->getConnectionByConnectionId( $request->fd );
 
 		}
@@ -61,10 +63,11 @@ class Connections {
 		return null;
 	}
 
-	public function processRequestIntoConnection( \stdClass $request ): ?Connection {
+	public function processRequestIntoConnection( Frame  $request ): ?Connection {
+
 		$connection = $this->getConnectionByRequest( $request );
 		if ( ! is_null( $connection ) ) {
-			return $connection->processRequest( $request );
+			return $connection->processFrame( $request );
 		}
 
 		return null;

@@ -18,7 +18,7 @@ services:
       - default
       - sentry_network
       - cache_network
-    command: php /app/src/swooletest.php
+    command: php /app/src/feed.php
 networks:
   default:
     name: devpledge_feed

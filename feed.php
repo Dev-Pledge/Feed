@@ -21,11 +21,16 @@ $websocket   = new swoole_websocket_server( getenv( 'API_DOMAIN' ), getenv( 'SWO
 $connections = new Connections( $websocket );
 
 $websocket->on( 'open', function ( swoole_websocket_server $server, $request ) use ( $connections ) {
+	echo 'open';
 	try {
 		new Connection( $request, $connections );
 	} catch ( TypeError | Exception $exception ) {
 		echo 'error';
 	}
+	$connections->each( function ( Connection $con ) {
+		//$con->push( 'hello' );
+		echo $con->getConnectionId() . PHP_EOL;
+	} );
 } );
 
 //$websocket->on( 'handshake', function () {
@@ -33,14 +38,19 @@ $websocket->on( 'open', function ( swoole_websocket_server $server, $request ) u
 //} );
 
 $websocket->on( 'message', function ( swoole_websocket_server $server, $frame ) use ( $connections ) {
+	echo 'MESSAGE' . PHP_EOL;
 	$connection = $connections->processRequestIntoConnection( $frame );
-
+	var_dump( $frame );
+	echo '...' . PHP_EOL;
 
 } );
 
 $websocket->on( 'close', function ( $ser, $fd ) use ( $connections ) {
+	echo 'remove ' . $fd . PHP_EOL;
 	$connections->removeConnection( $fd );
 } );
+
+$websocket->start();
 
 
 
