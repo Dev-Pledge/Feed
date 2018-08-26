@@ -18,6 +18,11 @@ class Connection {
 	 * @var string
 	 */
 	protected $connectionId;
+	/**
+	 * @var string
+	 */
+	protected $origin;
+
 
 	/**
 	 * Connection constructor.
@@ -26,7 +31,6 @@ class Connection {
 	 * @param Connections $connections
 	 */
 	public function __construct( Request $request, Connections $connections ) {
-		var_dump( $request );
 		if ( isset( $request->fd ) ) {
 			$this->connectionId = $request->fd;
 			$connections->addConnection( $this );
@@ -60,6 +64,9 @@ class Connection {
 		if ( isset( $data->user_id ) ) {
 			$this->userId = $data->user_id;
 		}
+		if ( isset( $data->origin ) ) {
+			$this->origin = $data->origin;
+		}
 
 		return $this;
 	}
@@ -91,10 +98,22 @@ class Connection {
 	 * @return Connection
 	 */
 	public function push( \stdClass $data ): Connection {
-		Connections::getWebSocketServer()->push( $this . $this->getConnectionId(), json_encode( $data ) );
+		Connections::getWebSocketServer()->push( $this->getConnectionId(), json_encode( $data ) );
 
 		return $this;
 	}
+
+	/**
+	 * @return bool
+	 */
+	public function isFromUI(): bool {
+		return ( $this->origin == 'ui' );
+	}
+
+	public function isFromAPI(): bool {
+		return ( $this->origin == 'api' );
+	}
+
 
 
 }

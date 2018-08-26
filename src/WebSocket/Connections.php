@@ -41,9 +41,9 @@ class Connections {
 	 *
 	 * @return Connection|null
 	 */
-	public function getConnectionByRequest( Frame $request ): ?Connection {
-		if ( isset( $request->fd) ) {
-			return $this->getConnectionByConnectionId( $request->fd );
+	public function getConnectionByFrame( Frame $frame ): ?Connection {
+		if ( isset( $frame->fd ) ) {
+			return $this->getConnectionByConnectionId( $frame->fd );
 
 		}
 
@@ -63,11 +63,16 @@ class Connections {
 		return null;
 	}
 
-	public function processRequestIntoConnection( Frame  $request ): ?Connection {
+	/**
+	 * @param Frame $request
+	 *
+	 * @return Connection|null
+	 */
+	public function processFrameIntoConnection( Frame $frame ): ?Connection {
 
-		$connection = $this->getConnectionByRequest( $request );
+		$connection = $this->getConnectionByFrame( $frame );
 		if ( ! is_null( $connection ) ) {
-			return $connection->processFrame( $request );
+			return $connection->processFrame( $frame );
 		}
 
 		return null;
@@ -97,10 +102,25 @@ class Connections {
 				try {
 					$function( $connection );
 				} catch ( \Exception | \TypeError $exception ) {
-					// do nothing
+					return;
 				}
 			}
 		}
+
+		return $this;
+	}
+
+	/**
+	 * @param \Closure $function
+	 *
+	 * @return Connections
+	 */
+	public function eachUiUser( \Closure $function ): Connections {
+		$this->each( function ( Connection $con ) use ( $function ) {
+			if ( $con->isUser() && $con->isFromUI() ) {
+				$function( $con );
+			}
+		} );
 
 		return $this;
 	}
@@ -110,5 +130,13 @@ class Connections {
 	 */
 	public static function getWebSocketServer(): \swoole_websocket_server {
 		return static::$websocketServer;
+	}
+
+	public function pushFeedItems( FeedItems $feedItems ) {
+
+
+		$this->eachUiUser( function ( Connection $con ) use ( $feedItems ) {
+			$con->push( $feedItems->toPushData() );
+		} );
 	}
 }

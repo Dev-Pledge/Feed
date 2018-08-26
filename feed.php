@@ -39,7 +39,7 @@ $websocket->on( 'open', function ( swoole_websocket_server $server, $request ) u
 
 $websocket->on( 'message', function ( swoole_websocket_server $server, $frame ) use ( $connections ) {
 	echo 'MESSAGE' . PHP_EOL;
-	$connection = $connections->processRequestIntoConnection( $frame );
+	$connection = $connections->processFrameIntoConnection( $frame );
 	var_dump( $frame );
 	echo '...' . PHP_EOL;
 
