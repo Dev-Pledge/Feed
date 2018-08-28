@@ -102,7 +102,7 @@ class Connections {
 				try {
 					$function( $connection );
 				} catch ( \Exception | \TypeError $exception ) {
-					return;
+					return null;
 				}
 			}
 		}
