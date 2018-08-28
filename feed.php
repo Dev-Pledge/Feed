@@ -25,7 +25,7 @@ $websocket->on( 'open', function ( swoole_websocket_server $server, $request ) u
 	try {
 		new Connection( $request, $connections );
 	} catch ( TypeError | Exception $exception ) {
-		echo 'error';
+		echo 'error'.  PHP_EOL;
 	}
 	$connections->each( function ( Connection $con ) {
 		//$con->push( 'hello' );
@@ -33,15 +33,15 @@ $websocket->on( 'open', function ( swoole_websocket_server $server, $request ) u
 	} );
 } );
 
-//$websocket->on( 'handshake', function () {
-//
-//} );
+$websocket->on( 'handshake', function () {
+	echo 'hand shake'.  PHP_EOL;
+} );
 
 $websocket->on( 'message', function ( swoole_websocket_server $server, $frame ) use ( $connections ) {
 	echo 'MESSAGE' . PHP_EOL;
 	$connection = $connections->processFrameIntoConnection( $frame );
 	var_dump( $frame );
-	echo '...' . PHP_EOL;
+	echo  PHP_EOL;
 
 } );
 
