@@ -18,6 +18,7 @@ services:
       - sentry_network
       - cache_network
     command: php /app/src/feed.php
+    restart: always
 
 networks:
   default:

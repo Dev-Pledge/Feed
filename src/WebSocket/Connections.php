@@ -3,8 +3,13 @@
 namespace DevPledge\WebSocket;
 
 
+use Predis\Client;
 use Swoole\WebSocket\Frame;
 
+/**
+ * Class Connections
+ * @package DevPledge\WebSocket
+ */
 class Connections {
 	/**
 	 * @var Connection[]
@@ -15,14 +20,25 @@ class Connections {
 	 * @var \swoole_websocket_server
 	 */
 	protected static $websocketServer;
+	/**
+	 * @var Client
+	 */
+	protected static $cache;
+	/**
+	 * @var Connections
+	 */
+	protected static $connectionsMaster;
 
 	/**
 	 * Connections constructor.
 	 *
-	 * @param swoole_websocket_server $websocketServer
+	 * @param \swoole_websocket_server $websocketServer
+	 * @param Client $cache
 	 */
-	public function __construct( \swoole_websocket_server $websocketServer ) {
-		static::$websocketServer = $websocketServer;
+	public function __construct( \swoole_websocket_server $websocketServer, Client $cache ) {
+		static::$websocketServer   = $websocketServer;
+		static::$cache             = $cache;
+		static::$connectionsMaster = $this;
 	}
 
 	/**
@@ -102,7 +118,9 @@ class Connections {
 				try {
 					$function( $connection );
 				} catch ( \Exception | \TypeError $exception ) {
-					return null;
+					echo 'each error ' . PHP_EOL . $exception->getMessage() . PHP_EOL . $exception->getTraceAsString();
+
+					return $this;
 				}
 			}
 		}
@@ -132,6 +150,13 @@ class Connections {
 		return static::$websocketServer;
 	}
 
+	/**
+	 * @return Client
+	 */
+	public static function getCache(): Client {
+		return static::$cache;
+	}
+
 	public function pushFeedItems( FeedItems $feedItems ) {
 
 
@@ -139,4 +164,12 @@ class Connections {
 			$con->push( $feedItems->toPushData() );
 		} );
 	}
+
+	/**
+	 * @return Connections
+	 */
+	public static function getConnectionsMaster() {
+		return static::$connectionsMaster;
+	}
+
 }

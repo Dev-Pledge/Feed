@@ -3,9 +3,9 @@
 namespace DevPledge\WebSocket;
 
 
-class FeedItems {
+class FeedItems extends AbstractStreamItem {
 	/**
-	 * @var FeedItem[]
+	 * @var AbstractStreamItem[]
 	 */
 	protected $feedItems = [];
 
@@ -14,7 +14,7 @@ class FeedItems {
 	 *
 	 * @param array|null $feedItems
 	 */
-	public function __construct( array $feedItems = null ) {
+	public function __construct( ?array $feedItems = null ) {
 		if ( isset( $feedItems ) ) {
 			$this->setFeedItems( $feedItems );
 		}
@@ -27,13 +27,13 @@ class FeedItems {
 	 */
 	public function setFeedItems( array $feedItems ): FeedItems {
 		$items = [];
-		$i     = 0;
+
 		foreach ( $feedItems as &$item ) {
-			$i ++;
-			if ( ! $item instanceof FeedItem ) {
+
+			if ( ! $item instanceof AbstractStreamItem ) {
 				$item = new FeedItem( $item );
 			}
-			$items[ $i ] = $item;
+			$items[] = $item;
 		}
 		$this->feedItems = $items;
 
@@ -41,19 +41,36 @@ class FeedItems {
 	}
 
 	/**
+	 * @return AbstractStreamItem[]
+	 */
+	public function getFeedItems(): array {
+		return $this->feedItems;
+	}
+
+	/**
 	 * @return \stdClass
 	 */
-	public function toPushData() {
+	public function toPushData(): \stdClass {
 		$data = new \stdClass();
 
 		$data->ids = [];
 
 		foreach ( $this->feedItems as $item ) {
-			$data->feed_ids[] = $item->getFeedItemId();
+
+			$data->entitys[] = $item->toPushData();
+
 		}
 
 		return $data;
 	}
 
 
+	/**
+	 * @param \stdClass $data
+	 *
+	 * @return AbstractStreamItem
+	 */
+	public function processData( \stdClass $data ): AbstractStreamItem {
+		return $this;
+	}
 }

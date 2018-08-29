@@ -3,55 +3,48 @@
 namespace DevPledge\WebSocket;
 
 
-class FeedItem {
+class FeedItem extends AbstractStreamItem {
 	/**
 	 * @var string | null
 	 */
 	protected $userId;
 	/**
-	 * @var string | null
+	 * @var array | null
 	 */
-	protected $solutionGroupId;
-	/**
-	 * @var string | null
-	 */
-	protected $organisationId;
+	protected $relatedIds;
+
 	/**
 	 * @var string
 	 */
-	protected $feedItemId;
-	/**
-	 * @var string
-	 */
-	protected $type;
+	protected $function;
 
-	const TYPES = [ 'create', 'update' ];
-
-	public function __construct( \stdClass $data ) {
-		$this->processData( $data );
-	}
 
 	/**
 	 * @param \stdClass $data
 	 *
 	 * @return FeedItem
 	 */
-	public function processData( \stdClass $data ): FeedItem {
-		$keys = [ 'user_id', 'organisation_id', 'solution_group_id', 'id' ];
+	public function processData( \stdClass $data ): AbstractStreamItem {
+		$keys = [ 'user_id', 'id', 'parent_id', 'related_ids', 'function' ];
 		foreach ( $keys as $key ) {
 			if ( isset( $data->{$key} ) ) {
 				switch ( $key ) {
 					case 'user_id':
 						$this->userId = $data->{$key};
 						break;
-					case 'organisation_id':
-						$this->organisationId = $data->{$key};
-						break;
-					case 'solution_group_id':
-						$this->organisationId = $data->{$key};
-						break;
 					case 'id':
-						$this->feedItemId = $data->{$key};
+						$this->id = $data->{$key};
+						break;
+					case 'related_ids':
+						if ( is_array( $data->{$key} ) ) {
+							$this->relatedIds = $data->{$key};
+						}
+						break;
+					case 'parent_id':
+						$this->parentId = $data->{$key};
+						break;
+					case 'function':
+						$this->function = $data->{$key};
 						break;
 				}
 			}
@@ -67,26 +60,27 @@ class FeedItem {
 		return $this->userId;
 	}
 
-	/**
-	 * @return null|string
-	 */
-	public function getSolutionGroupId(): ?string {
-		return $this->solutionGroupId;
-	}
 
 	/**
-	 * @return null|string
+	 * @return array
 	 */
-	public function getOrganisationId(): ?string {
-		return $this->organisationId;
+	public function getRelatedIds(): array {
+		return isset( $this->relatedIds ) ? $this->relatedIds : [];
+	}
+
+
+	public function toPushData(): \stdClass {
+		return (object) [
+			'id'        => $this->getId(),
+			'parent_id' => $this->getParentId(),
+			'function'  => $this->getFunction()
+		];
 	}
 
 	/**
 	 * @return string
 	 */
-	public function getFeedItemId(): string {
-		return $this->feedItemId;
+	public function getFunction(): ?string {
+		return isset( $this->function ) ? $this->function : 'historical-stream';
 	}
-
-
 }
