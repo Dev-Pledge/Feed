@@ -17,6 +17,8 @@ class HistoricalStreamItem extends AbstractStreamItem {
 		if ( isset( $data->parent_id ) ) {
 			$this->parentId = $data->parent_id;
 		}
+
+		return $this;
 	}
 
 	/**

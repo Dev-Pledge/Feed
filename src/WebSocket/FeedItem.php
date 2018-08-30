@@ -38,6 +38,9 @@ class FeedItem extends AbstractStreamItem {
 					case 'related_ids':
 						if ( is_array( $data->{$key} ) ) {
 							$this->relatedIds = $data->{$key};
+						} else {
+							echo 'RELATED IDS NOT RIGHT' . PHP_EOL;
+							var_dump( $data->{$key} );
 						}
 						break;
 					case 'parent_id':

@@ -53,7 +53,7 @@ class FeedItems extends AbstractStreamItem {
 	public function toPushData(): \stdClass {
 		$data = new \stdClass();
 
-		$data->ids = [];
+		$data->entitys = [];
 
 		foreach ( $this->feedItems as $item ) {
 

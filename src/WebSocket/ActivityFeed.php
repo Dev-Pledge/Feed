@@ -14,12 +14,19 @@ class ActivityFeed {
 	}
 
 	/**
-	 * @return array
+	 * @return \stdClass[]
 	 */
 	public function get(): array {
 		$key          = 'activity-feed:' . $this->id;
 		$activityFeed = \json_decode( Connections::getCache()->get( $key ) );
 		if ( is_array( $activityFeed ) ) {
+
+			foreach ( $activityFeed as &$item ) {
+				if ( ! is_object( $item ) ) {
+					$item = (object) [ 'id' => $item, 'parent_id' => null ];
+				}
+			}
+
 			return $activityFeed;
 		}
 

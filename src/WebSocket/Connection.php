@@ -35,6 +35,9 @@ class Connection {
 			$this->connectionId = $request->fd;
 			$connections->addConnection( $this );
 		}
+		if ( isset( $request->header['origin'] ) ) {
+			$this->origin = $request->header['origin'];
+		}
 		if ( isset( $request->data ) ) {
 			$this->processRawData( $request->data );
 		}
@@ -61,32 +64,53 @@ class Connection {
 	public function processRawData( string $rawData ): Connection {
 		$data = \json_decode( $rawData );
 
+		echo 'PROCESSING DATA:' . PHP_EOL;
+		var_dump( $data );
+		echo PHP_EOL;
+
 		if ( isset( $data->user_id ) ) {
 			$this->userId = $data->user_id;
 		}
-		if ( isset( $data->origin ) ) {
-			$this->origin = $data->origin;
-		}
 
 		$this->doApiFunction( $data );
-
+		$this->doUiFunctions( $data );
 
 		return $this;
 	}
 
 	public function doApiFunction( \stdClass $data ) {
+
 		if ( ! $this->isFromAPI() ) {
 			return null;
 		}
+		echo 'DoAPIFUNC:' . PHP_EOL;
+		var_dump( $data );
 		$function = isset( $data->function ) ? $data->function : null;
 		switch ( $function ) {
 			case 'created-entity':
 			case 'updated-entity':
 			case 'deleted-entity':
-				$feedItem = new FeedItems( $data );
+				$feedItem = new FeedItem( $data );
+				echo __LINE__ . PHP_EOL;
+				var_dump( $feedItem );
 				Connections::getConnectionsMaster()->each( function ( Connection $con ) use ( $feedItem ) {
 					$con->pushFeedItem( $feedItem );
 				} );
+				break;
+		}
+		$this->push( (object) [ 'done' => true ] );
+	}
+
+	public function doUiFunctions( \stdClass $data ) {
+		if ( ! $this->isFromUI() ) {
+			return null;
+		}
+		echo 'DoUIFUNC:' . PHP_EOL;
+		var_dump( $data );
+		$function = isset( $data->function ) ? $data->function : null;
+		switch ( $function ) {
+			case 'get-feed':
+				$this->pushHistoricalStream();
 				break;
 		}
 	}
@@ -118,7 +142,8 @@ class Connection {
 	 * @return Connection
 	 */
 	public function push( \stdClass $data ): Connection {
-
+		echo 'PUSHING TO ' . $this->getConnectionId() . PHP_EOL;
+		var_dump( $data );
 		Connections::getWebSocketServer()->push( $this->getConnectionId(), json_encode( $data ) );
 
 		return $this;
@@ -128,7 +153,7 @@ class Connection {
 	 * @return bool
 	 */
 	public function isFromUI(): bool {
-		return ( $this->origin == 'ui' );
+		return ( strpos( $this->origin, 'http' ) !== false );
 	}
 
 	public function isFromAPI(): bool {
@@ -154,10 +179,16 @@ class Connection {
 	 * @return Connection
 	 */
 	public function pushFeedItem( FeedItem $feedItem ): Connection {
-		$followIds  = $this->getFollowIds();
+		var_dump( $this->origin );
+		$followIds = $this->getFollowIds();
+		echo 'FOLLOW IDS' . PHP_EOL;
+		var_dump( $followIds );
 		$relatedIds = $feedItem->getRelatedIds();
 		foreach ( $relatedIds as $id ) {
 			if ( in_array( $id, $followIds ) ) {
+				echo $id . PHP_EOL;
+				echo 'SENDING' . PHP_EOL . 'CONID:' . $this->getConnectionId() . PHP_EOL;
+				var_dump( $feedItem->toPushData() );
 				$this->push( $feedItem->toPushData() );
 				break;
 			}
@@ -171,7 +202,15 @@ class Connection {
 	 * @return Connection
 	 */
 	public function pushHistoricalStream(): Connection {
-		return $this->push( $this->getHistoricalFeedItems()->toPushData() );
+		if ( $this->isFromUI() ) {
+			return $this->push( $this->getHistoricalFeedItems()->toPushData() );
+		} else {
+			echo 'Not from UI ';
+			var_dump( $this->origin );
+			echo PHP_EOL;
+		}
+
+		return $this;
 	}
 
 	/**
@@ -200,11 +239,16 @@ class Connection {
 	public function getHistoricalFeedItems( ?array $followIds = null ): FeedItems {
 		$followIds      = $followIds ?? $this->getFollowIds();
 		$historicalFeed = \json_decode( Connections::getCache()->get( 'historical-stream:' . $this->userId ) );
+		echo 'Historical' . PHP_EOL;
+		var_dump( $historicalFeed );
 		if ( ! ( is_array( $historicalFeed ) && count( $historicalFeed ) ) ) {
 
 			$historicalFeed = $this->createHistoricalFeedItems( $followIds );
 		}
 		foreach ( $historicalFeed as &$feedItem ) {
+			if ( ! is_object( $feedItem ) ) {
+				$feedItem = (object) [ 'id' => $feedItem, 'parent_id' => null ];
+			}
 			$feedItem = new HistoricalStreamItem( $feedItem );
 		}
 
