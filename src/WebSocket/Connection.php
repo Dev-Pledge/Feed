@@ -196,6 +196,7 @@ class Connection {
 				echo 'SENDING' . PHP_EOL . 'CONID:' . $this->getConnectionId() . ' from ' . $this->origin . PHP_EOL;
 				var_dump( $feedItem->toPushData() );
 				$this->push( $feedItem->toPushData() );
+				Connections::getCache()->set( 'historical-stream:' . $this->userId, serialize( null ) );
 				break;
 			}
 		}
@@ -232,7 +233,7 @@ class Connection {
 			$historicalFeed = array_merge( $historicalFeed, $activity );
 		}
 		shuffle( $historicalFeed );
-		Connections::getCache()->set( 'historical-stream:' . $this->userId, \json_encode( $historicalFeed ) );
+		Connections::getCache()->setex( 'historical-stream:' . $this->userId, 60, \json_encode( $historicalFeed ) );
 
 		return $historicalFeed;
 	}
