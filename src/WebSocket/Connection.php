@@ -195,7 +195,7 @@ class Connection {
 				echo $id . PHP_EOL;
 				echo 'SENDING' . PHP_EOL . 'CONID:' . $this->getConnectionId() . ' from ' . $this->origin . PHP_EOL;
 				var_dump( $feedItem->toPushData() );
-				$this->push( $feedItem->toPushData() );
+				$this->push( (object) [ 'entities' => [ $feedItem->toPushData() ] ] );
 				Connections::getCache()->set( 'historical-stream:' . $this->userId, serialize( null ) );
 				break;
 			}
