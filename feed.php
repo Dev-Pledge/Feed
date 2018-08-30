@@ -36,14 +36,18 @@ $websocket->on( 'open', function ( swoole_websocket_server $server, $request ) u
 
 
 $websocket->on( 'message', function ( swoole_websocket_server $server, $frame ) use ( & $connections ) {
-	$connections->setWebSocketServer( $server );
-	echo 'MESSAGE' . PHP_EOL;
-	try {
-		var_dump( $frame );
-		echo PHP_EOL;
-		$connections->processFrameIntoConnection( $frame );
-	} catch ( TypeError | Exception $exception ) {
-		echo 'error - ' . $exception->getMessage() . PHP_EOL . $exception->getTraceAsString() . PHP_EOL;
+	if ( $frame->data == '.' ) {
+		echo '.';
+	} else {
+		$connections->setWebSocketServer( $server );
+		echo 'MESSAGE' . PHP_EOL;
+		try {
+			var_dump( $frame );
+			echo PHP_EOL;
+			$connections->processFrameIntoConnection( $frame );
+		} catch ( TypeError | Exception $exception ) {
+			echo 'error - ' . $exception->getMessage() . PHP_EOL . $exception->getTraceAsString() . PHP_EOL;
+		}
 	}
 } );
 
