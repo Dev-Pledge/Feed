@@ -57,7 +57,7 @@ class FeedItems extends AbstractStreamItem {
 
 		foreach ( $this->feedItems as $item ) {
 
-			$data->entitys[] = $item->toPushData();
+			$data->entities[] = $item->toPushData();
 
 		}
 
