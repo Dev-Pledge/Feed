@@ -40,6 +40,8 @@ class Connection {
 		}
 		if ( isset( $request->data ) ) {
 			$this->processRawData( $request->data );
+		} else {
+			Connections::getConnectionsMaster();
 		}
 	}
 
@@ -74,6 +76,7 @@ class Connection {
 
 		$this->doApiFunction( $data );
 		$this->doUiFunctions( $data );
+		Connections::getConnectionsMaster();
 
 		return $this;
 	}
@@ -93,7 +96,10 @@ class Connection {
 				$feedItem = new FeedItem( $data );
 				echo __LINE__ . PHP_EOL;
 				var_dump( $feedItem );
-				Connections::getConnectionsMaster()->each( function ( Connection $con ) use ( $feedItem ) {
+				Connections::getConnectionsMaster()->eachUiUser( function ( Connection $con ) use ( $feedItem ) {
+					echo '-------';
+					echo $con->origin;
+					echo '-------';
 					$con->pushFeedItem( $feedItem );
 				} );
 				break;
@@ -187,7 +193,7 @@ class Connection {
 		foreach ( $relatedIds as $id ) {
 			if ( in_array( $id, $followIds ) ) {
 				echo $id . PHP_EOL;
-				echo 'SENDING' . PHP_EOL . 'CONID:' . $this->getConnectionId() . PHP_EOL;
+				echo 'SENDING' . PHP_EOL . 'CONID:' . $this->getConnectionId() . ' from ' . $this->origin . PHP_EOL;
 				var_dump( $feedItem->toPushData() );
 				$this->push( $feedItem->toPushData() );
 				break;

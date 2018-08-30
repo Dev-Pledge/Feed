@@ -36,9 +36,21 @@ class Connections {
 	 * @param Client $cache
 	 */
 	public function __construct( \swoole_websocket_server $websocketServer, Client $cache ) {
+		$cache->set( 'feed:__connections', serialize( [] ) );
 		static::$websocketServer   = $websocketServer;
 		static::$cache             = $cache;
 		static::$connectionsMaster = $this;
+	}
+
+	/**
+	 * @param \swoole_websocket_server $websocketServer
+	 *
+	 * @return Connections
+	 */
+	public function setWebSocketServer( \swoole_websocket_server $websocketServer ): Connections {
+		static::$websocketServer = $websocketServer;
+
+		return $this;
 	}
 
 	/**
@@ -47,7 +59,7 @@ class Connections {
 	 * @return Connections
 	 */
 	public function addConnection( Connection $connection ): Connections {
-		$this->connections[ $connection->getConnectionId() ] =& $connection;
+		$this->connections[ 'fd' . $connection->getConnectionId() ] =& $connection;
 
 		return $this;
 	}
@@ -72,8 +84,8 @@ class Connections {
 	 * @return Connection|null
 	 */
 	public function getConnectionByConnectionId( int $connectionId ): ?Connection {
-		if ( isset( $this->connections[ $connectionId ] ) ) {
-			return $this->connections[ $connectionId ];
+		if ( isset( $this->connections[ 'fd' . $connectionId ] ) ) {
+			return $this->connections[ 'fd' . $connectionId ];
 		}
 
 		return null;
@@ -100,9 +112,21 @@ class Connections {
 	 * @return Connections
 	 */
 	public function removeConnection( int $connectionId ): Connections {
-		if ( isset( $this->connections[ $connectionId ] ) ) {
-			unset( $this->connections[ $connectionId ] );
+		if ( isset( $this->connections[ 'fd' . $connectionId ] ) ) {
+			unset( $this->connections[ 'fd' . $connectionId ] );
 		}
+		$cons = unserialize( static::$cache->get( 'feed:__connections' ) );
+		if ( is_array( $cons ) ) {
+			if ( isset( $cons[ 'fd' . $connectionId ] ) ) {
+				unset( $cons[ 'fd' . $connectionId ] );
+			}
+		}
+		foreach ( $cons as $key => $con ) {
+			if ( strpos( $key, 'fd' ) === false ) {
+				unset( $cons[ $key ] );
+			}
+		}
+		static::$cache->setex( 'feed:__connections', 180, serialize( $cons ) );
 
 		return $this;
 	}
@@ -114,11 +138,17 @@ class Connections {
 	 */
 	public function each( \Closure $function ): Connections {
 		if ( count( $this->connections ) ) {
-			foreach ( $this->connections as $connection ) {
+			foreach ( $this->connections as $key => $connection ) {
+				if ( strpos( $key, 'fd' ) === false ) {
+					unset( $this->connections[ $key ] );
+					continue;
+				}
 				try {
 					$function( $connection );
 				} catch ( \Exception | \TypeError $exception ) {
 					echo 'each error ' . PHP_EOL . $exception->getMessage() . PHP_EOL . $exception->getTraceAsString();
+					echo '- connection array ';
+					var_dump( $this->connections );
 
 					return $this;
 				}
@@ -168,7 +198,21 @@ class Connections {
 	/**
 	 * @return Connections
 	 */
-	public static function getConnectionsMaster() {
+	public static function getConnectionsMaster(): Connections {
+		echo 'BEFORE' . PHP_EOL;
+		var_dump( static::$connectionsMaster->connections );
+
+		$currentConnections = static::$connectionsMaster->connections;
+
+		$cachedConnections = unserialize( static::$cache->get( 'feed:__connections' ) );
+		if ( is_array( $cachedConnections ) ) {
+			static::$connectionsMaster->connections = array_merge( $cachedConnections, $currentConnections );
+		}
+
+		static::$cache->setex( 'feed:__connections', 180, serialize( static::$connectionsMaster->connections ) );
+		echo 'AFTER' . PHP_EOL;
+		var_dump( static::$connectionsMaster->connections );
+
 		return static::$connectionsMaster;
 	}
 

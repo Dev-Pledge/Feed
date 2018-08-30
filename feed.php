@@ -22,11 +22,12 @@ $websocket = new swoole_websocket_server( getenv( 'API_DOMAIN' ), getenv( 'SWOOL
 $connections = new Connections( $websocket, $cache );
 
 $websocket->on( 'open', function ( swoole_websocket_server $server, $request ) use ( & $connections ) {
+	$connections->setWebSocketServer( $server );
 	echo 'open REQUEST:' . PHP_EOL;
 	var_dump( $request );
 	try {
 		$connection = new Connection( $request, $connections );
-		$connection->push(  (object)['connection_id'=>$connection->getConnectionId()]);
+		$connection->push( (object) [ 'connection_id' => $connection->getConnectionId() ] );
 	} catch ( TypeError | Exception $exception ) {
 		echo 'error - ' . $exception->getMessage() . PHP_EOL . $exception->getTraceAsString() . PHP_EOL;
 	}
@@ -35,7 +36,7 @@ $websocket->on( 'open', function ( swoole_websocket_server $server, $request ) u
 
 
 $websocket->on( 'message', function ( swoole_websocket_server $server, $frame ) use ( & $connections ) {
-
+	$connections->setWebSocketServer( $server );
 	echo 'MESSAGE' . PHP_EOL;
 	try {
 		var_dump( $frame );
@@ -46,7 +47,8 @@ $websocket->on( 'message', function ( swoole_websocket_server $server, $frame ) 
 	}
 } );
 
-$websocket->on( 'close', function ( $ser, $fd ) use ( & $connections ) {
+$websocket->on( 'close', function ( swoole_websocket_server $server, $fd ) use ( & $connections ) {
+	$connections->setWebSocketServer( $server );
 	echo 'remove ' . $fd . PHP_EOL;
 	$connections->removeConnection( $fd );
 	echo PHP_EOL;
