@@ -73,4 +73,20 @@ class FeedItems extends AbstractStreamItem {
 	public function processData( \stdClass $data ): AbstractStreamItem {
 		return $this;
 	}
+
+	/**
+	 * @param string $id
+	 *
+	 * @return bool
+	 */
+	public function hasId( string $id ) {
+		$items = $this->getFeedItems();
+		foreach ( $items as $item ) {
+			if ( $item->getParentId() == $id || $item->getId() == $id ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
 }

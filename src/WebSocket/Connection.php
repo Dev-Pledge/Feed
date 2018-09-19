@@ -192,23 +192,39 @@ class Connection {
 	public function pushFeedItem( FeedItem $feedItem ): Connection {
 		var_dump( $this->origin );
 		$followIds = $this->getFollowIds();
+
+
 		echo 'FOLLOW IDS' . PHP_EOL;
 		var_dump( $followIds );
 		$relatedIds = $feedItem->getRelatedIds();
+		$pushed     = false;
 		foreach ( $relatedIds as $id ) {
 			if ( in_array( $id, $followIds ) ) {
 				echo $id . PHP_EOL;
 				echo 'SENDING' . PHP_EOL . 'CONID:' . $this->getConnectionId() . ' from ' . $this->origin . PHP_EOL;
 				var_dump( $feedItem->toPushData() );
 				$this->push( (object) [ 'entities' => [ $feedItem->toPushData() ] ] );
-				Connections::getCache()->set( 'historical-stream:' . $this->userId, serialize( null ) );
+				$pushed = true;
 				break;
 			}
 		}
+		if ( ! $pushed ) {
+			$historicalFeedItems = $this->getHistoricalFeedItems();
+			if ( $historicalFeedItems->hasId( $feedItem->getId() ) || $historicalFeedItems->hasId( $feedItem->getParentId() ) ) {
+				$this->push( (object) [ 'entities' => [ $feedItem->toPushData() ] ] );
+			}
 
+		}
 
 		return $this;
 
+	}
+
+	/**
+	 * @return array
+	 */
+	protected function getCachedHistoricalStream() {
+		return \json_decode( Connections::getCache()->get( 'historical-stream:' . $this->userId ) );
 	}
 
 	/**
@@ -251,7 +267,7 @@ class Connection {
 	 */
 	public function getHistoricalFeedItems( ?array $followIds = null ): FeedItems {
 		$followIds      = $followIds ?? $this->getFollowIds();
-		$historicalFeed = \json_decode( Connections::getCache()->get( 'historical-stream:' . $this->userId ) );
+		$historicalFeed = $this->getCachedHistoricalStream();
 		echo 'Historical' . PHP_EOL;
 		var_dump( $historicalFeed );
 		if ( ! ( is_array( $historicalFeed ) && count( $historicalFeed ) ) ) {
