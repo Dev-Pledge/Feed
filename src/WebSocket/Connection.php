@@ -37,12 +37,14 @@ class Connection {
 		}
 		if ( isset( $request->header['origin'] ) ) {
 			$this->origin = $request->header['origin'];
+			$connections->addConnection( $this );
 		}
 		if ( isset( $request->data ) ) {
 			$this->processRawData( $request->data );
 		} else {
 			Connections::getConnectionsMaster();
 		}
+
 	}
 
 	/**
@@ -76,7 +78,8 @@ class Connection {
 
 		$this->doApiFunction( $data );
 		$this->doUiFunctions( $data );
-		Connections::getConnectionsMaster();
+
+		Connections::getConnectionsMaster()->addConnection( $this );
 
 		return $this;
 	}
@@ -109,6 +112,8 @@ class Connection {
 
 	public function doUiFunctions( \stdClass $data ) {
 		if ( ! $this->isFromUI() ) {
+			echo PHP_EOL . 'NOT FROM UI' . PHP_EOL;
+
 			return null;
 		}
 		echo 'DoUIFUNC:' . PHP_EOL;
@@ -200,6 +205,7 @@ class Connection {
 				break;
 			}
 		}
+
 
 		return $this;
 

@@ -4,6 +4,7 @@ namespace DevPledge\WebSocket;
 
 
 use Predis\Client;
+use Predis\Collection\Iterator\Keyspace;
 use Swoole\WebSocket\Frame;
 
 /**
@@ -36,7 +37,6 @@ class Connections {
 	 * @param Client $cache
 	 */
 	public function __construct( \swoole_websocket_server $websocketServer, Client $cache ) {
-		$cache->set( 'feed:__connections', serialize( [] ) );
 		static::$websocketServer   = $websocketServer;
 		static::$cache             = $cache;
 		static::$connectionsMaster = $this;
@@ -48,6 +48,7 @@ class Connections {
 	 * @return Connections
 	 */
 	public function setWebSocketServer( \swoole_websocket_server $websocketServer ): Connections {
+		$this->connections       = static::getConnectionsMaster()->connections;
 		static::$websocketServer = $websocketServer;
 
 		return $this;
@@ -59,7 +60,10 @@ class Connections {
 	 * @return Connections
 	 */
 	public function addConnection( Connection $connection ): Connections {
-		$this->connections[ 'fd' . $connection->getConnectionId() ] =& $connection;
+		$master                                                       = static::getConnectionsMaster();
+		$master->connections[ 'fd' . $connection->getConnectionId() ] =& $connection;
+		$this->connections                                            = $master->connections;
+		static::$cache->setex( 'feed:fd' . $connection->getConnectionId(), 180, serialize( $connection ) );
 
 		return $this;
 	}
@@ -71,8 +75,8 @@ class Connections {
 	 */
 	public function getConnectionByFrame( Frame $frame ): ?Connection {
 		if ( isset( $frame->fd ) ) {
-			return $this->getConnectionByConnectionId( $frame->fd );
 
+			return $this->getConnectionByConnectionId( $frame->fd );
 		}
 
 		return null;
@@ -100,6 +104,8 @@ class Connections {
 
 		$connection = $this->getConnectionByFrame( $frame );
 		if ( ! is_null( $connection ) ) {
+			$this->addConnection( $connection );
+
 			return $connection->processFrame( $frame );
 		}
 
@@ -115,18 +121,7 @@ class Connections {
 		if ( isset( $this->connections[ 'fd' . $connectionId ] ) ) {
 			unset( $this->connections[ 'fd' . $connectionId ] );
 		}
-		$cons = unserialize( static::$cache->get( 'feed:__connections' ) );
-		if ( is_array( $cons ) ) {
-			if ( isset( $cons[ 'fd' . $connectionId ] ) ) {
-				unset( $cons[ 'fd' . $connectionId ] );
-			}
-		}
-		foreach ( $cons as $key => $con ) {
-			if ( strpos( $key, 'fd' ) === false ) {
-				unset( $cons[ $key ] );
-			}
-		}
-		static::$cache->setex( 'feed:__connections', 180, serialize( $cons ) );
+		static::$cache->del( [ 'feed:fd' . $connectionId ] );
 
 		return $this;
 	}
@@ -138,7 +133,7 @@ class Connections {
 	 */
 	public function each( \Closure $function ): Connections {
 		if ( count( $this->connections ) ) {
-			foreach ( $this->connections as $key => $connection ) {
+			foreach ( $this->connections as $key => &$connection ) {
 				if ( strpos( $key, 'fd' ) === false ) {
 					unset( $this->connections[ $key ] );
 					continue;
@@ -199,21 +194,51 @@ class Connections {
 	 * @return Connections
 	 */
 	public static function getConnectionsMaster(): Connections {
-		echo 'BEFORE' . PHP_EOL;
-		var_dump( static::$connectionsMaster->connections );
 
-		$currentConnections = static::$connectionsMaster->connections;
-
-		$cachedConnections = unserialize( static::$cache->get( 'feed:__connections' ) );
-		if ( is_array( $cachedConnections ) ) {
-			static::$connectionsMaster->connections = array_merge( $cachedConnections, $currentConnections );
-		}
-
-		static::$cache->setex( 'feed:__connections', 180, serialize( static::$connectionsMaster->connections ) );
-		echo 'AFTER' . PHP_EOL;
-		var_dump( static::$connectionsMaster->connections );
+		static::$connectionsMaster->connections = static::getCachedConnections();
 
 		return static::$connectionsMaster;
+	}
+
+	/**
+	 * @return Connection[]
+	 */
+	public static function getCachedConnections() {
+		$returnValue = [];
+		static::matchIterate( 'feed:fd*', 1000, function ( $key, $value ) use ( &$returnValue ) {
+			/**
+			 * @var $con Connection
+			 */
+			$con = unserialize( $value );
+			if ( $con instanceof Connection ) {
+				$returnValue[ 'fd' . $con->getConnectionId() ] = $con;
+			} else {
+				echo 'PROBLEM ' . PHP_EOL;
+				var_dump( $key, $value );
+				echo 'PROBLEM ' . PHP_EOL;
+			}
+		} );
+
+		return $returnValue;
+	}
+
+	protected static function matchIterate( string $match, int $count = 10, ?\Closure $keyValFunction = null ): array {
+		$returnArray = [];
+		foreach ( new Keyspace( static::getCache(), $match, $count ) as $key ) {
+
+			$value = static::getCache()->get( $key );
+
+			if ( isset( $keyValFunction ) ) {
+				if ( isset( $keyValFunction ) ) {
+					$keyValFunction( $key, $value );
+				}
+			}
+			$returnArray[] = $value;
+
+		}
+
+		return $returnArray;
+
 	}
 
 }
