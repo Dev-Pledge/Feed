@@ -249,6 +249,7 @@ class Connection {
 	 */
 	protected function createHistoricalFeedItems( ?array $followIds = null ): array {
 		$followIds      = $followIds ?? $this->getFollowIds();
+		$followIds[]    = $this->getUserId();
 		$historicalFeed = [];
 		foreach ( $followIds as $followId ) {
 			$activity       = array_slice( ( new ActivityFeed( $followId ) )->get(), 0, 5 );
