@@ -210,7 +210,7 @@ class Connection {
 		}
 		if ( ! $pushed ) {
 			$historicalFeedItems = $this->getHistoricalFeedItems();
-			if ( $historicalFeedItems->hasId( $feedItem->getId() ) || $historicalFeedItems->hasId( $feedItem->getParentId() ) ) {
+			if ( $historicalFeedItems->hasId( $feedItem->getId() ) || $historicalFeedItems->hasId( $feedItem->getParentId() ) || $feedItem->getUserId() == $this->getUserId() ) {
 				$this->push( (object) [ 'entities' => [ $feedItem->toPushData() ] ] );
 			}
 
