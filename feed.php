@@ -9,7 +9,6 @@ use Predis\Collection\Iterator\Keyspace;
 date_default_timezone_set('UTC');
 
 require __DIR__ . '/vendor/autoload.php';
-require __DIR__ . '/dotenv.php';
 
 $cache = new Client( [
 	'scheme' => 'tcp',

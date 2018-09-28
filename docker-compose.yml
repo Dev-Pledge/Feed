@@ -2,6 +2,14 @@ version: "3.5"
 
 services:
 
+  feed-composer:
+    container_name: dev_pledge_feed_composer
+    image: twosee/swoole-coroutine
+    working_dir: /app/src
+    volumes:
+      - .:/app/src
+    command: composer install
+
   feed:
     container_name: dev_pledge_feed
     image: twosee/swoole-coroutine
